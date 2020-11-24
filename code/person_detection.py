@@ -45,8 +45,8 @@ while(True):
    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
-   if(faces.any()):
-       (x,y,w,h) = faces[0] #only grab the first detected face
+   for (x,y,w,h) in faces:
+       #(x,y,w,h) = faces[0] #only grab the first detected face
        img = cv2.rectangle(img,(x,y),(x+w,y+h),(255,0,0),2)
 
        center = int(x+w/2) #centerpoint of face
