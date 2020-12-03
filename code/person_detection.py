@@ -47,8 +47,6 @@ while(True):
    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
    for (x,y,w,h) in faces:
        #(x,y,w,h) = faces[0] #only grab the first detected face
-       img = cv2.rectangle(img,(x,y),(x+w,y+h),(255,0,0),2)
-
        center = int(x+w/2) #centerpoint of face
        y0 = 0 #botton of image (for drawing vertical line)
        y1 = img.shape[0] - 1 #top of image
