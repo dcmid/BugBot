@@ -18,7 +18,7 @@ void setup() {
   // enable timer compare interrupt
   TIMSK1 |= (1 << OCIE1A);
   sei();
-  //attachInterrupt(digitalPinToInterrupt(echoPin), detect_echo, RISING);
+  attachInterrupt(digitalPinToInterrupt(echoPin), detect_echo, RISING);
 }
 
 volatile unsigned long distance = 0;
@@ -38,21 +38,14 @@ ISR(TIMER1_COMPA_vect){  //change the 0 to 1 for timer1 and 2 for timer2
    digitalWrite(trigPin, HIGH);
    delayMicroseconds(10);
    digitalWrite(trigPin, LOW);
-//   trig = micros();
-   long duration = pulseIn(echoPin, HIGH);
-   distance = (duration/2) / 29.1;
+   trig = micros();
+//   long duration = pulseIn(echoPin, HIGH);
+//   distance = (duration/2) / 29.1;
 }
 
 void detect_echo(){
   if(trig != 0){
-    long distance = ((micros() - trig)/2.) / 29.1;
+    distance = ((micros() - trig)/2.) / 29.1;
     trig = 0;
-    if (distance >= 200 || distance <= 0){
-      Serial.println("Out of range");
-    }
-    else {
-      Serial.print(distance);
-      Serial.println(" cm");
-    }
   }
 }

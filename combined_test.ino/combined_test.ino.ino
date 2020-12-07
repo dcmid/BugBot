@@ -24,7 +24,7 @@ void setup() {
   TIMSK2 |= (1 << OCIE2A);
   sei();
   servo.attach(servoPin);
-  servo.write(90); //stationary
+//  servo.write(90); //stationary
   //attachInterrupt(digitalPinToInterrupt(echoPin), detect_echo, RISING);
 }
 
