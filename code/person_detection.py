@@ -13,7 +13,7 @@ import cv2
 import sys
 
 face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
-eye_cascade = cv2.CascadeClassifier('haarcascade_eye.xml')
+# eye_cascade = cv2.CascadeClassifier('haarcascade_eye.xml')
 
 
 img=None
@@ -38,20 +38,37 @@ else:
       print("Using default image.")
 
 
+centers = np.zeros((10,1))-1; #initialize last 10 centers as -1 (not detected)
 while(True):
    if webCam:
       ret, img = cap.read()
+   img_cent = int(img.shape[1]/2)
 
    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
+   centers = np.roll(centers,1) #shift previous centers right
    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
-   for (x,y,w,h) in faces:
-       #(x,y,w,h) = faces[0] #only grab the first detected face
+   if(len(faces) > 0): #if a face is detected
+
+       (x,y,w,h) = faces[0,:]#extract coordinates of first detected face
+
+       img = cv2.rectangle(img,(x,y),(x+w,y+h),(255,0,0),2)
+
        center = int(x+w/2) #centerpoint of face
+       centers[0] = center
        y0 = 0 #botton of image (for drawing vertical line)
        y1 = img.shape[0] - 1 #top of image
 
        img = cv2.line(img,(center,y0), (center,y1), (255,0,0), 2) #draw vertical line
+   else:
+       centers[0] = -1 #no face detected
+   valid_centers = centers[centers != -1]
+   if(len(valid_centers) > 0):
+      avg_center = np.mean(valid_centers)
+      err = int(avg_center - img_cent)
+   else:
+      err = -999 #no faces detected in last 10 captures
+   
 
    # for (x,y,w,h) in faces:
    #     img = cv2.rectangle(img,(x,y),(x+w,y+h),(255,0,0),2)

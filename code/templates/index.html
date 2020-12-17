@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+ <head>
+   <title>Video Streaming </title>
+   <script src="static/socket.io.js">
+    <script type="text/javascript" charset="utf-8">
+    var socket = io();
+    socket.on('connect', function() {
+       socket.emit('my event', {data: 'I\'m connected!'});
+    });
+    </script>
+   <script src="static/client.js"></script>
+ </head>
+ <body>
+   <h1> Live Video Streaming </h1>
+   <img src="{{ url_for('video_feed') }}">
+
+   <h3>Distance</h3>
+   <p id="dist"></p>
+
+   <button onclick="send_it()">SEND IT</button>
+   <script>
+   var socket = io();
+    function send_it(){
+      socket.emit('send_it');
+      console.log("SUNT");
+    }
+   </script>
+ </body>
+</html>

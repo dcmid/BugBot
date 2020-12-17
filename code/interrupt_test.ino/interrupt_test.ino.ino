@@ -3,25 +3,28 @@
 
 void setup() {
   Serial.begin(115200);
+  Serial.begin(115200);
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT_PULLUP);
   cli(); //stop interrupts
-  TCCR1A = 0;// set entire TCCR1A register to 0
-  TCCR1B = 0;// same for TCCR1B
-  TCNT1  = 0;//initialize counter value to 0
-  // set compare match register for 4Hz increments
-  OCR1A = 3656;// = (8*10^6) / (1*1024) - 1 (must be <65536)
+  TCCR2A = 0;// set entire TCCR2A register to 0
+  TCCR2B = 0;// same for TCCR2B
+  TCNT2  = 0;//initialize counter value to 0
+  // set compare match register
+  OCR2A = 255;// = set max comparison value
   // turn on CTC mode
-  TCCR1B |= (1 << WGM12);
-  // Set CS10 and CS12 bits for 1024 prescaler
-  TCCR1B |= (1 << CS12) | (1 << CS10);  
+  TCCR2A |= (1 << WGM21);
+  // Set bits for 1024 prescaler
+  TCCR2B |= (1 << CS22) | (1 << CS21) | (1 << CS20);   
   // enable timer compare interrupt
-  TIMSK1 |= (1 << OCIE1A);
+  TIMSK2 |= (1 << OCIE2A);
   sei();
-  attachInterrupt(digitalPinToInterrupt(echoPin), detect_echo, RISING);
+  attachInterrupt(digitalPinToInterrupt(echoPin), detect_echo, CHANGE);
 }
 
+volatile unsigned long diff = 0;
 volatile unsigned long distance = 0;
+volatile unsigned long trig = 0;
 void loop() {
     delay(200);
     if (distance >= 200 || distance <= 0){
@@ -31,21 +34,33 @@ void loop() {
       Serial.print(distance);
       Serial.println(" cm");
     }
+  //Serial.println(diff);
 }
 
-volatile unsigned long trig;
-ISR(TIMER1_COMPA_vect){  //change the 0 to 1 for timer1 and 2 for timer2
-   digitalWrite(trigPin, HIGH);
-   delayMicroseconds(10);
-   digitalWrite(trigPin, LOW);
-   trig = micros();
-//   long duration = pulseIn(echoPin, HIGH);
-//   distance = (duration/2) / 29.1;
+//volatile int state = LOW;
+ISR(TIMER2_COMPA_vect){  //change the 0 to 1 for timer1 and 2 for timer2
+  if(trig != 0){ //if the echo pulse hasn't ended, give invalid trig value
+    trig = -1;
+  }
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(40);
+  digitalWrite(trigPin, LOW);
 }
 
 void detect_echo(){
-  if(trig != 0){
-    distance = ((micros() - trig)/2.) / 29.1;
+  if(trig != -1){
+    int rising_edge = digitalRead(echoPin);
+    if(rising_edge){
+      trig = micros();
+    }
+    else if(trig != 0){
+      diff = micros() - trig;
+      distance = ((micros() - trig)/2.) / 29.1;
+      trig = 0;
+    }
+  }
+  else{
+    distance = 999;
     trig = 0;
   }
 }
